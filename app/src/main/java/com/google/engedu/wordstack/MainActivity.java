@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
             while((line = in.readLine()) != null) {
                 String word = line.trim();
 
-                if (word.length() == WORD_LENGTH ){
+                if (word.length() == WORD_LENGTH){
                     words.add(word);
                 }
             }
@@ -76,10 +76,10 @@ public class MainActivity extends AppCompatActivity {
         verticalLayout.addView(stackedLayout, 3);
 
         word1LinearLayout = findViewById(R.id.word1);
-        word1LinearLayout.setOnTouchListener(new TouchListener());
+        word1LinearLayout.setOnDragListener(new DragListener());
         //word1LinearLayout.setOnDragListener(new DragListener());
         word2LinearLayout = findViewById(R.id.word2);
-        word2LinearLayout.setOnTouchListener(new TouchListener());
+        word2LinearLayout.setOnDragListener(new DragListener());
         //word2LinearLayout.setOnDragListener(new DragListener());
     }
 
@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 placedTiles.push(tile);
+                Log.i("test", "PTsize"+placedTiles.size());
 
                 return true;
             }
@@ -132,11 +133,8 @@ public class MainActivity extends AppCompatActivity {
                         TextView messageBox = (TextView) findViewById(R.id.message_box);
                         messageBox.setText(word1 + " " + word2);
                     }
-                    /**
-                     **
-                     **  YOUR CODE GOES HERE
-                     **
-                     **/
+                    placedTiles.push(tile);
+
                     return true;
             }
             return false;
@@ -145,51 +143,142 @@ public class MainActivity extends AppCompatActivity {
 
     public boolean onStartGame(View view) {
 
-        stackedLayout.clear();
+
         word1LinearLayout.removeAllViews();
         word2LinearLayout.removeAllViews();
+        stackedLayout.clear();
+
+//        TextView messageBox = (TextView) findViewById(R.id.message_box);
+//        messageBox.setText("Game started");
+//
+//        word1 = words.get(random.nextInt(words.size()));
+//        word2 = words.get(random.nextInt(words.size()));
+//
+//        while(word1.equals(word2)){
+//            word2 = words.get(random.nextInt(words.size()));
+//        }
+//        Log.i("test", "word1: " + word1);
+//        Log.i("test", "word2: " + word2);
+//
+//        int counter1 = 0;
+//        int counter2 = 0;
+
+
+//        int rand;
+
+        // can also use String Builder
+//        char[] temp = new char[word1.length() + word2.length()];    //10
+//
+//        for(int i = 0; i < temp.length; i++){
+//
+//            rand = random.nextInt(2); // can use nextBoolean
+//            if (rand != 1 && counter1 < word1.length()) {
+//                temp[i] = word1.charAt(counter1);
+//                Log.i("test", "temp " + Arrays.toString(temp));
+//                counter1++;
+//            }
+//            else if (counter2 < word2.length()){
+//                temp[i] = word2.charAt(counter2);
+//                Log.i("test", "temp "+ Arrays.toString(temp));
+//                counter2++;
+//            }
+//        }
+
+//        StringBuilder sb = new StringBuilder();
+//        while(counter1 < word1.length() && counter2 < word2.length()){
+//            if(random.nextBoolean()){
+//                sb.append(word1.charAt(counter1));
+//            }
+//            else{
+//                sb.append(word2.charAt(counter2));
+//            }
+//        }
+//        Log.i("test", "ok???");
+//        if(counter1 < word1.length()){
+//            sb.append(word1.toCharArray(), counter1, word1.length()-counter1);
+//        }
+//        else{
+//            sb.append(word2.toCharArray(), counter2, word2.length()-counter2);
+//        }
+//
+//        messageBox.setText(sb.toString());
+//        Log.i("test", "ok???");
+//        for (int i = sb.length() -1; i >= 0; i--){
+//            LetterTile tile = new LetterTile(this, sb.toString().charAt(i));
+//            stackedLayout.push(tile);
+//        }
+//        return true;
+
+
+
+
+        int word1Index = random.nextInt(words.size());
+        int word2Index = random.nextInt(words.size());
+
+        while (word1Index == word2Index) {
+            word2Index = random.nextInt(words.size());
+        }
+
+        word1 = words.get(word1Index);
+        word2 = words.get(word2Index);
+
+        String scrambledWords = scramble(word1, word2);
+
+        for (int i = scrambledWords.length()-1; i >= 0; i--) {
+            stackedLayout.push(new LetterTile(this, scrambledWords.charAt(i)));
+        }
+
+        Log.i("test", word1 + " + " + word2 + " = " + scrambledWords);
+
+        Log.i("test", "initial: "+stackedLayout.tiles.size());
 
         TextView messageBox = (TextView) findViewById(R.id.message_box);
-        messageBox.setText("Game started");
+        messageBox.setText(scrambledWords);
 
-        word1 = words.get(random.nextInt(words.size()));
-        word2 = words.get(random.nextInt(words.size()));
-
-        while(word1.equals(word2)){
-            word2 = words.get(random.nextInt(words.size()));
-        }
-
-        int counter1 = 0;
-        int counter2 = 0;
-        int rand;
-        // can also use String Builder
-        char[] temp = new char[word1.length() + word2.length()];
-
-        for(int i = 0; i < temp.length; i++){
-
-            rand = random.nextInt(2); // can use nextBoolean
-            if (rand == 0 && counter1 < word1.length()) {
-                temp[i] = word1.charAt(counter1);
-                counter1++;
-            }
-            else if (counter2 < word2.length()){
-                temp[i] = word2.charAt(counter2);
-                counter2++;
-            }
-        }
-        messageBox.setText(new String(temp));
-
-        for (int i = temp.length -1; i >= 0; i--){
-            LetterTile tile = new LetterTile(this.getApplicationContext(), temp[i]);
-            stackedLayout.push(tile);
-        }
         return true;
     }
 
     public boolean onUndo(View view) {
         if(!placedTiles.empty()) {
             placedTiles.pop().moveToViewGroup(stackedLayout);
+            Log.i("test", "here1" + placedTiles.size());
+        }
+        else {
+           // placedTiles.peek().moveToViewGroup(stackedLayout);
+            Log.i("test", "here2"+ placedTiles.size());
         }
         return true;
+    }
+
+
+
+    // Returns the scrambled version of w1 and w2, preserving letter order.
+    private String scramble(String w1, String w2) {
+        int i = 0;
+        int j = 0;
+        StringBuilder s = new StringBuilder();
+
+        // In a loop:
+        //   Randomly pick a word.
+        //   Add the character from that word at its index to the StringBuilder.
+        //   Increment that index.
+        while (i < w1.length() && j < w2.length()) {
+            if (random.nextBoolean()) {
+                // Pick word1.
+                s.append(word1.charAt(i++));
+            } else {
+                // Pick word2.
+                s.append(word2.charAt(j++));
+            }
+        }
+
+        // Add the remaining letters from the unexhausted word.
+        if (i < w1.length()) {
+            s.append(word1.toCharArray(), i, word1.length()-i);
+        } else {
+            s.append(word2.toCharArray(), j, word2.length()-j);
+        }
+
+        return s.toString();
     }
 }
